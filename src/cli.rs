@@ -9,7 +9,7 @@ pub(crate) struct Cli {
   pub(crate) udp_listen_addr: Vec<SocketAddr>,
   #[arg(long, env = "DNS_HOLE_TCP_LISTEN_ADDRS", default_value = "0.0.0.0:53")]
   pub(crate) tcp_listen_addr: Vec<SocketAddr>,
-  #[arg(short = 'u', long, env = "DNS_HOLE_STATS_ULR")]
+  #[arg(short = 'u', long, env = "DNS_HOLE_STATS_URL")]
   pub(crate) stats_url: Url,
   #[arg(short = 't', long, env = "DNS_HOLE_STATS_TOKEN")]
   pub(crate) stats_token: String,

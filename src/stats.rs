@@ -1,7 +1,7 @@
 use std::io::Write;
 use std::net::IpAddr;
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
 use flate2::write::GzEncoder;
@@ -25,6 +25,7 @@ struct Entry {
   query_type: RecordType,
   query_class: DNSClass,
   response_code: ResponseCode,
+  duration: Duration,
 }
 
 pub(crate) struct Stats<T>(Arc<InnerStats<T>>);
@@ -63,13 +64,14 @@ impl Entry {
 
     writeln!(
       w,
-      "queries,src={},protocol={},query={},type={},class={},response_code=\"{}\" {}",
+      "queries,src={},protocol={},query={},type={},response_code={} class=\"{}\",duration={}u {}",
       self.src,
       self.protocol,
       self.query,
       self.query_type,
+      self.response_code.to_str().replace(' ', "\\ "),
       self.query_class,
-      self.response_code,
+      self.duration.as_millis(),
       timestamp
     )?;
 
@@ -153,6 +155,8 @@ impl<T: RequestHandler> RequestHandler for Stats<T> {
       .handle_request(request, response_handle)
       .await;
 
+    let duration = timestamp.elapsed().unwrap();
+
     {
       let entry = Entry {
         timestamp,
@@ -162,6 +166,7 @@ impl<T: RequestHandler> RequestHandler for Stats<T> {
         query_type: request.query().query_type(),
         query_class: request.query().query_class(),
         response_code: response.response_code(),
+        duration,
       };
 
       self.push(entry).await;

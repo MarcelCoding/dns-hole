@@ -2,7 +2,7 @@ FROM rust:slim AS builder
 
 RUN update-ca-certificates
 
-ENV USER=jitsi-openid
+ENV USER=dns-hole
 ENV UID=10001
 
 RUN adduser \
@@ -22,7 +22,7 @@ COPY ./Cargo.lock ./Cargo.lock
 COPY ./Cargo.toml ./Cargo.toml
 
 RUN cargo build --release \
- && rm src/*.rs target/release/deps/jitsi_openid*
+ && rm src/*.rs target/release/deps/dns_hole*
 
 COPY ./src ./src
 RUN cargo build --release

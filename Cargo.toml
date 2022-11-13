@@ -1,0 +1,27 @@
+[package]
+name = "dns-hole"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+trust-dns-server = { version = "0.22", default-features = false, features = ["resolver", "dns-over-https-rustls"] }
+tokio = { version = "1.21", default-features = false, features = ["macros"] }
+reqwest = { version = "0.11", default-features = false, features = ["trust-dns"] }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+clap = { version = "4.0", features = ["derive", "env"] }
+tracing-subscriber = "0.3"
+async-trait = "0.1"
+tracing = "0.1"
+anyhow = "1.0"
+flate2 = "1.0"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+# by overriding our dependencies' compilation settings, we can further optimize for size
+# https://docs.rust-embedded.org/book/unsorted/speed-vs-size.html#optimizing-dependencies
+[profile.release.package."*"]
+codegen-units = 1

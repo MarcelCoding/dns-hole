@@ -46,7 +46,7 @@ jobs:
         if: matrix.os == 'windows'
         run: mv target/release/dns-hole.exe dns-hole_${{ matrix.os }}.exe
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: dns-hole_${{ matrix.os }}
           path: dns-hole_${{ matrix.os }}*

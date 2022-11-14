@@ -1,19 +1,5 @@
 FROM rust:slim AS builder
 
-RUN update-ca-certificates
-
-ENV USER=dns-hole
-ENV UID=10001
-
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    "${USER}"
-
 RUN cargo new --bin dns-hole
 
 WORKDIR /dns-hole
@@ -26,6 +12,18 @@ RUN cargo build --release \
 
 COPY ./src ./src
 RUN cargo build --release
+
+ENV USER=dns-hole
+ENV UID=10001
+
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
 
 FROM gcr.io/distroless/cc
 

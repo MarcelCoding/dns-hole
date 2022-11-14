@@ -64,16 +64,11 @@ impl Entry {
 
     // TODO: charts
     // - query count at timestamp
-    // - query duration at timestamp
     // - total avg duration
-    // - src ip at timestamp
-    // - src ip pie chart
-    // - total src ip count
-    // - top blocked domains
-    // - top not blocked domains
     // - blocked/not blocked at timestamp
-    // - total query count
-    // - type pie chart
+    // - non blocked queries
+    // - block list size
+    // - hostnames instead of ip's in statistics
 
     writeln!(
       w,

@@ -1,4 +1,3 @@
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -17,13 +16,6 @@ use crate::stats::Stats;
 
 mod cli;
 mod stats;
-
-pub const CLOUDFLARE_IPS: &[IpAddr] = &[
-  IpAddr::V4(Ipv4Addr::new(1, 1, 1, 2)),
-  IpAddr::V4(Ipv4Addr::new(1, 0, 0, 2)),
-  IpAddr::V6(Ipv6Addr::new(0x2606, 0x4700, 0x4700, 0, 0, 0, 0, 0x1112)),
-  IpAddr::V6(Ipv6Addr::new(0x2606, 0x4700, 0x4700, 0, 0, 0, 0, 0x1002)),
-];
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

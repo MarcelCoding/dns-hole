@@ -23,8 +23,8 @@ struct Entry {
   protocol: Protocol,
   query: LowerName,
   query_type: RecordType,
-  query_class: DNSClass,
   response_code: ResponseCode,
+  blocked: bool,
   duration: Duration,
 }
 
@@ -62,15 +62,28 @@ impl Entry {
   fn write<W: Write>(&self, w: &mut W) -> anyhow::Result<()> {
     let timestamp = self.timestamp.duration_since(UNIX_EPOCH)?.as_millis();
 
+    // TODO: charts
+    // - query count at timestamp
+    // - query duration at timestamp
+    // - total avg duration
+    // - src ip at timestamp
+    // - src ip pie chart
+    // - total src ip count
+    // - top blocked domains
+    // - top not blocked domains
+    // - blocked/not blocked at timestamp
+    // - total query count
+    // - type pie chart
+
     writeln!(
       w,
-      "queries,src={},protocol={},query={},type={},response_code={} class=\"{}\",duration={}u {}",
+      "queries,src={},protocol={},query={},type={},response_code={},blocked={} duration={}u {}",
       self.src,
       self.protocol,
       self.query,
       self.query_type,
       self.response_code.to_str().replace(' ', "\\ "),
-      self.query_class,
+      self.blocked,
       self.duration.as_millis(),
       timestamp
     )?;
@@ -164,9 +177,9 @@ impl<T: RequestHandler> RequestHandler for Stats<T> {
         protocol: request.protocol(),
         query: request.query().name().to_owned(),
         query_type: request.query().query_type(),
-        query_class: request.query().query_class(),
         response_code: response.response_code(),
         duration,
+        blocked: false,
       };
 
       self.push(entry).await;

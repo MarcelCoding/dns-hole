@@ -38,4 +38,6 @@ pub(crate) struct Cli {
     default_value = "security.cloudflare-dns.com"
   )]
   pub(crate) dns_dns_name: String,
+  #[arg(long, env = "DNS_HOLE_DB_URL")]
+  pub(crate) db_url: String,
 }

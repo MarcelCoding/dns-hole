@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::io::Write;
 use std::net::IpAddr;
 use std::sync::Arc;
@@ -10,9 +11,12 @@ use reqwest::header::{AUTHORIZATION, CONTENT_ENCODING};
 use reqwest::{Client, Url};
 use serde::Serialize;
 use tokio::sync::Mutex;
+use trust_dns_server::authority::MessageResponseBuilder;
 use trust_dns_server::client::op::ResponseCode;
-use trust_dns_server::client::rr::{DNSClass, LowerName, RecordType};
+use trust_dns_server::client::rr::{LowerName, RecordType};
 use trust_dns_server::server::{Protocol, Request, RequestHandler, ResponseHandler, ResponseInfo};
+
+use crate::blacklist::Blacklist;
 
 const BUFFER_SIZE: usize = 128;
 
@@ -37,6 +41,7 @@ struct InnerStats<T> {
   client: Client,
   buffer: Mutex<Vec<Entry>>,
   delegate: T,
+  blacklist: Blacklist,
 }
 
 #[derive(Serialize)]
@@ -88,7 +93,14 @@ impl Entry {
 }
 
 impl<T: RequestHandler> Stats<T> {
-  pub(crate) fn new(endpoint: &Url, bucket: String, org: String, token: &str, delegate: T) -> Self {
+  pub(crate) fn new(
+    endpoint: &Url,
+    bucket: String,
+    org: String,
+    token: &str,
+    delegate: T,
+    blacklist: Blacklist,
+  ) -> Self {
     Self(Arc::new(InnerStats {
       endpoint: endpoint.join("api/v2/write").unwrap(),
       auth: format!("Token {}", token),
@@ -100,6 +112,7 @@ impl<T: RequestHandler> Stats<T> {
         precision: WritePrecision::Milliseconds,
       },
       delegate,
+      blacklist,
     }))
   }
 
@@ -153,15 +166,32 @@ impl<T: RequestHandler> RequestHandler for Stats<T> {
   async fn handle_request<R: ResponseHandler>(
     &self,
     request: &Request,
-    response_handle: R,
+    mut response_handle: R,
   ) -> ResponseInfo {
     let timestamp = SystemTime::now();
 
-    let response = self
+    let response = if self
       .0
-      .delegate
-      .handle_request(request, response_handle)
-      .await;
+      .blacklist
+      .is_blocked(request.query().name().borrow())
+      .await
+      .unwrap()
+    {
+      let builder = MessageResponseBuilder::from_message_request(request);
+      match response_handle
+        .send_response(builder.error_msg(request.header(), ResponseCode::NXDomain))
+        .await
+      {
+        Ok(resp) => resp,
+        Err(err) => todo!(),
+      }
+    } else {
+      self
+        .0
+        .delegate
+        .handle_request(request, response_handle)
+        .await
+    };
 
     let duration = timestamp.elapsed().unwrap();
 

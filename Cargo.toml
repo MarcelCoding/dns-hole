@@ -4,16 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+reqwest = { version = "0.11", default-features = false, features = ["trust-dns", "stream", "rustls-tls-webpki-roots"] }
 trust-dns-server = { version = "0.22", default-features = false, features = ["resolver", "dns-over-https-rustls"] }
-tokio = { version = "1.21", default-features = false, features = ["macros"] }
-reqwest = { version = "0.11", default-features = false, features = ["trust-dns"] }
+sqlx = { version = "0.6", default-features = false, features = ["runtime-tokio-rustls", "postgres", "uuid", "time", "macros"] }
+tokio = { version = "1.22", default-features = false, features = ["macros"] }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
+futures-util = { version = "0.3", default-features = false }
 clap = { version = "4.0", features = ["derive", "env"] }
+tokio-util = { version = "0.7", features = ["io"] }
 tracing-subscriber = "0.3"
 async-trait = "0.1"
 tracing = "0.1"
 anyhow = "1.0"
 flate2 = "1.0"
+time = "0.3"
+uuid = "1.2"
 
 [profile.release]
 lto = true

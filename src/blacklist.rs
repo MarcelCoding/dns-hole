@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::str::FromStr;
 
 use futures_util::stream::TryStreamExt;
@@ -88,7 +87,7 @@ impl Blacklist {
         Ok(name) => {
           sqlx::query("insert into blacklist (domain, source) values ($1::varchar(255), $2::uuid)")
             .bind(format!("{}", name))
-            .bind(&source.id)
+            .bind(source.id)
             .execute(&mut tx)
             .await?;
         }
@@ -97,7 +96,7 @@ impl Blacklist {
     }
 
     sqlx::query("update source set last_updated = current_timestamp where id = $1::uuid")
-      .bind(&source.id)
+      .bind(source.id)
       .execute(&mut tx)
       .await?;
 
